@@ -1,0 +1,102 @@
+package Name;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class abf {
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Seating Arrangement Generator");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(400, 300);
+        frame.setLayout(new BorderLayout());
+
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new GridLayout(4, 2));
+
+        JTextField numStudentsField = new JTextField();
+        JTextField numRowsField = new JTextField();
+        JTextField numColsField = new JTextField();
+        JButton generateButton = new JButton("Generate Seating Arrangement");
+        JTextArea resultTextArea = new JTextArea();
+
+        inputPanel.add(new JLabel("Number of Students:"));
+        inputPanel.add(numStudentsField);
+        inputPanel.add(new JLabel("Number of Rows:"));
+        inputPanel.add(numRowsField);
+        inputPanel.add(new JLabel("Number of Columns:"));
+        inputPanel.add(numColsField);
+        inputPanel.add(generateButton);
+
+        frame.add(inputPanel, BorderLayout.NORTH);
+        frame.add(new JScrollPane(resultTextArea), BorderLayout.CENTER);
+
+        generateButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int numStudents = Integer.parseInt(numStudentsField.getText());
+                int numRows = Integer.parseInt(numRowsField.getText());
+                int numCols = Integer.parseInt(numColsField.getText());
+                generateSeatingArrangement(numStudents, numRows, numCols, resultTextArea);
+            }
+        });
+
+        frame.setVisible(true);
+    }
+
+    public static void generateSeatingArrangement(int numStudents, int numRows, int numCols, JTextArea resultTextArea) {
+        int numSeats = numRows * numCols;
+        int classroomLimit = 40;
+        int classroomNumber = 0;
+        int studentCount = 1; // Initialize student count
+        int studentCountWithinClassroom = 1; // Initialize student count within classroom
+
+        if (numStudents > numSeats * classroomLimit) {
+            resultTextArea.setText("There are not enough seats for all the students!");
+            return;
+        }
+
+        int[][] seatingArrangement = new int[numRows][numCols];
+        StringBuilder seatingResult = new StringBuilder();
+
+        for (int studentNumber = 1; studentNumber <= numStudents; studentNumber++) {
+            int row = (studentCount - 1) / numCols % numRows;
+            int col = (studentCount - 1) % numCols;
+
+            if (studentCount % classroomLimit == 1) {
+                classroomNumber++;
+                seatingResult.append("Classroom ").append(classroomNumber).append(":\n");
+                studentCountWithinClassroom = 1; // Reset student count within classroom
+            }
+
+            seatingArrangement[row][col] = studentCountWithinClassroom;
+
+            if (studentCountWithinClassroom == classroomLimit || studentNumber == numStudents) {
+                seatingResult.append("Seating Arrangement for Classroom ").append(classroomNumber).append(":\n");
+                seatingResult.append(printSeatingArrangement(seatingArrangement, numRows, numCols));
+                seatingResult.append("\n");
+                seatingArrangement = new int[numRows][numCols];
+            }
+
+            studentCount++; // Increment student count
+            studentCountWithinClassroom++; // Increment student count within classroom
+        }
+
+        resultTextArea.setText(seatingResult.toString());
+    }
+
+    public static String printSeatingArrangement(int[][] arrangement, int numRows, int numCols) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numCols; j++) {
+                if (arrangement[i][j] == 0) {
+                    result.append(" ");
+                } else {
+                    result.append(String.format("% 2d", arrangement[i][j]));
+                }
+            }
+            result.append("\n");
+        }
+        return result.toString();
+    }
+}
